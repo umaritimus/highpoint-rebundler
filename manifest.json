@@ -1,0 +1,32 @@
+{
+    "name": "HPT_BUNDLE",
+    "description": "Highpoint Bundle",
+    "path": "//share/software",
+    "filename": "HPT_BUNDLE_v22.1.0.zip",
+    "content": [
+        {
+            "id": 1,
+            "name": "HPT_BUNDLE",
+            "description": "Schedule Builder, Degree Planner and Common objects bundled into one",
+            "path": "//share/download/HBUNDLE_USERNAME.zip"
+        },
+        {
+            "id": 2,
+            "name": "HPT_SB_DELIVERED_MODS",
+            "description": "Schedule Builder modifications to the delivered objects",
+            "path": "//share/download/HPT_SB_DELIVERED_MODS_v23.0.0.zip"
+        },
+        {
+            "id": 3,
+            "name": "HPT_DP_DELIVERED_MODS",
+            "description": "Degree Planner modifications to the delivered objects",
+            "path": "//share/download/HPT_DP_DELIVERED_MODS_v23.0.0.zip"
+        },
+        {
+            "id": 4,
+            "name": "HPT_ENROLLMENT",
+            "description": "Enrollment Cobols for PS_CUST_HOME/src/cbl",
+            "path": "//share/download/cobol_pum24.zip"
+        }
+    ]
+}
