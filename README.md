@@ -8,7 +8,9 @@ Rebundle highpoint deliverables into a single bundle
 
 ## Deployment
 
+1. Once `manifest.json` is created in pwd, execute `rebundle.ps1`
+1. Once complete, expand the new bundle at path/filename specified in the manifest
 1. Examine `manifest.json` to confirm the bundled Highpoint versions
-1. Copy `HPT_BUNDLE/class` to the designated classpath
+1. Copy `HPT_BUNDLE/class/*` to the designated classpath (or add the hpt_bundle to dpk manifest)
 1. Add other `HPT_BUNDLE/*` objects to version/change control
 
