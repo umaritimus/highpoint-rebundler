@@ -1,7 +1,7 @@
 # highpoint-rebundler
 Rebundle highpoint deliverables into a single bundle
 
-## Requirement
+## Requirements
 1. Create `manifest.json` in the current working directory (see `manifest.example.json`).
 
 > _Note:_ Ensure that the bundle `filename` is reflecting the Highpoint release version and all the `path`s are correctly specified in unix format.
