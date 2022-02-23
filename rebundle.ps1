@@ -1,4 +1,4 @@
-${manifest_path} = '.\manifest.json'
+${manifest_path} = Resolve-Path -Path '.\manifest.json'
 ${manifest} = Get-Content ${manifest_path} | ConvertFrom-Json
 
 If (Resolve-path -Path ${manifest}.path -ErrorAction SilentlyContinue) {
@@ -87,11 +87,7 @@ ${manifest}.content | Sort-Object -Property id | ForEach-Object {
     }
 }
 
-Copy-Item `
-    -Path ${manifest_path} `
-    -Destination "${Env:TEMP}\highpoint\HPT_BUNDLE"
-
 Compress-Archive `
-    -Path "${Env:TEMP}\highpoint\HPT_BUNDLE" `
+    -Path "${Env:TEMP}\highpoint\HPT_BUNDLE",${manifest_path} `
     -DestinationPath ${destination} `
     -Update

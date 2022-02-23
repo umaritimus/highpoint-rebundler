@@ -8,7 +8,7 @@ Rebundle highpoint deliverables into a single bundle
 
 ## Deployment
 
-1. Examine `HPT_BUNDLE/manifest.json` to confirm the bundled Highpoint versions
+1. Examine `manifest.json` to confirm the bundled Highpoint versions
 1. Copy `HPT_BUNDLE/class` to the designated classpath
 1. Add other `HPT_BUNDLE/*` objects to version/change control
 
