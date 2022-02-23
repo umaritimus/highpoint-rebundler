@@ -3,15 +3,14 @@ ${manifest} = Get-Content ${manifest_path} | ConvertFrom-Json
 
 If (Resolve-path -Path ${manifest}.path -ErrorAction SilentlyContinue) {
     ${destination} = Join-Path -Path $(Resolve-path -Path ${manifest}.path -ErrorAction SilentlyContinue) -ChildPath ${manifest}.filename 
+} Else {
+    Throw "Please ensure that a valid manifest.json is present"
 }
 
 ${manifest}.content | Sort-Object -Property id | ForEach-Object { 
     Write-Output "Processing $($_.description)"
 
     If (${_}.name -eq 'HPT_BUNDLE') {
-        Write-Output "Expand Bundle to a name HPT_BUNDLE"
-        Write-Output "Rename Project to HPT_BUNDLE"
-        Write-Output "Ranem files"
         Set-Location "${Env:TEMP}"
         If (Test-Path -Path "${Env:TEMP}\highpoint" ) {
             Set-Location -Path "${Env:TEMP}"
@@ -19,18 +18,27 @@ ${manifest}.content | Sort-Object -Property id | ForEach-Object {
         }
         If (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) {
             New-Item -ItemType Directory -Path "${Env:TEMP}" -Name "highpoint" -Force
-            Expand-Archive -Path (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) -DestinationPath "${Env:TEMP}\highpoint" -Force
+            Expand-Archive `
+                -Path (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) `
+                -DestinationPath "${Env:TEMP}\highpoint" `
+                -Force
 
-            Get-Item ${env:TEMP}\highpoint\HBUNDLE* | Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE" -Force
+            Get-Item ${env:TEMP}\highpoint\HBUNDLE* | `
+                Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE" -Force
 
-            Get-Item ${env:TEMP}\highpoint\HPT_BUNDLE\querytrees | Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\data" -Force
-            Get-Item ${env:TEMP}\highpoint\HPT_BUNDLE\dms | Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\scripts" -Force
-            Get-Item ${env:TEMP}\highpoint\HPT_BUNDLE\jars | Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\class" -Force
-            Get-Item ${env:TEMP}\highpoint\HPT_BUNDLE\ps| Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\projects" -Force
-            Get-Item ${env:TEMP}\highpoint\HPT_BUNDLE\projects\HBUNDLE* | Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\projects\HPT_BUNDLE" -Force
+            Get-Item ${env:TEMP}\highpoint\HPT_BUNDLE\querytrees | `
+                Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\data" -Force
+            Get-Item ${env:TEMP}\highpoint\HPT_BUNDLE\dms | `
+                Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\scripts" -Force
+            Get-Item ${env:TEMP}\highpoint\HPT_BUNDLE\jars | `
+                Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\class" -Force
+            Get-Item ${env:TEMP}\highpoint\HPT_BUNDLE\ps| `
+                Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\projects" -Force
+            Get-Item ${env:TEMP}\highpoint\HPT_BUNDLE\projects\HBUNDLE* | `
+                Move-Item -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\projects\HPT_BUNDLE" -Force
 
             Move-Item `
-                -Path $(Resolve-Path -Path "${env:TEMP}\highpoint\HPT_BUNDLE\projects\HPT_BUNDLE*\HBUNDLE*.ini") `
+                -Path "${env:TEMP}\highpoint\HPT_BUNDLE\projects\HPT_BUNDLE\HBUNDLE*.ini" `
                 -Destination "${env:TEMP}\highpoint\HPT_BUNDLE\projects\HPT_BUNDLE\HPT_BUNDLE.ini" -Force
 
             Move-Item `
@@ -55,21 +63,35 @@ ${manifest}.content | Sort-Object -Property id | ForEach-Object {
                     Set-Content -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\scripts\$(${_}.Name)" -Force
             }
 
-            Get-Item -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\dms" -ErrorAction SilentlyContinue | Remove-Item -Force
-            Get-ChildItem -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\jars" -ErrorAction SilentlyContinue | Move-Item -Destination "${Env:TEMP}\highpoint\HPT_BUNDLE\class" -Force
+            Get-Item -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\dms" -ErrorAction SilentlyContinue | `
+                Remove-Item -Force
+            Get-ChildItem -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\jars" -ErrorAction SilentlyContinue | `
+                Move-Item -Destination "${Env:TEMP}\highpoint\HPT_BUNDLE\class" -Force
         }
     } ElseIf (${_}.name -in ('HPT_SB_DELIVERED_MODS','HPT_DP_DELIVERED_MODS')) {
         If (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) {
-            Expand-Archive -Path (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) -DestinationPath "${Env:TEMP}\highpoint\HPT_BUNDLE\projects" -Force
+            Expand-Archive `
+                -Path (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) `
+                -DestinationPath "${Env:TEMP}\highpoint\HPT_BUNDLE\projects" `
+                -Force
         }
     } ElseIf (${_}.name -in ('HPT_ENROLLMENT')) {
         If (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) {
-            Expand-Archive -Path (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) -DestinationPath "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl" -Force
-            Get-Item -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\*" | Move-Item -Destination "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base" -Force
+            Expand-Archive `
+                -Path (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) `
+                -DestinationPath "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl" `
+                -Force
+            Get-Item -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\*" | `
+                Move-Item -Destination "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base" -Force
         }
     }
 }
 
-Copy-Item -Path ${manifest_path} -Destination "${Env:TEMP}\highpoint\HPT_BUNDLE"
+Copy-Item `
+    -Path ${manifest_path} `
+    -Destination "${Env:TEMP}\highpoint\HPT_BUNDLE"
 
-Compress-Archive -Path "${Env:TEMP}\highpoint\HPT_BUNDLE" -DestinationPath ${destination} -Update
+Compress-Archive `
+    -Path "${Env:TEMP}\highpoint\HPT_BUNDLE" `
+    -DestinationPath ${destination} `
+    -Update
