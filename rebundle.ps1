@@ -2,22 +2,24 @@ ${manifest_path} = Resolve-Path -Path '.\manifest.json'
 ${manifest} = Get-Content ${manifest_path} | ConvertFrom-Json
 
 If (Resolve-path -Path ${manifest}.path -ErrorAction SilentlyContinue) {
-    ${destination} = Join-Path -Path $(Resolve-path -Path ${manifest}.path -ErrorAction SilentlyContinue) -ChildPath ${manifest}.filename 
+    ${destination} = Join-Path -Path $(Resolve-path -Path ${manifest}.path -ErrorAction SilentlyContinue) -ChildPath ${manifest}.filename
 } Else {
     Throw "Please ensure that a valid manifest.json is present"
 }
 
-${manifest}.content | Sort-Object -Property id | ForEach-Object { 
+If (Test-Path -Path "${Env:TEMP}\highpoint" ) {
+    Set-Location -Path "${Env:TEMP}"
+    Remove-Item -Path "${Env:TEMP}\highpoint" -Force -Recurse
+}
+
+${manifest}.content | Sort-Object -Property id | ForEach-Object {
     Write-Output "Processing $($_.description)"
 
     If (${_}.name -eq 'HPT_BUNDLE') {
         Set-Location "${Env:TEMP}"
-        If (Test-Path -Path "${Env:TEMP}\highpoint" ) {
-            Set-Location -Path "${Env:TEMP}"
-            Remove-Item -Path "${Env:TEMP}\highpoint" -Force -Recurse
-        }
+
         If (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) {
-            New-Item -ItemType Directory -Path "${Env:TEMP}" -Name "highpoint" -Force
+            New-Item -ItemType Directory -Path "${Env:TEMP}" -Name "highpoint" -Force | Out-Null
             Expand-Archive `
                 -Path (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) `
                 -DestinationPath "${Env:TEMP}\highpoint" `
@@ -47,6 +49,7 @@ ${manifest}.content | Sort-Object -Property id | ForEach-Object {
             
             (Get-Content -Path "${env:TEMP}\highpoint\HPT_BUNDLE\projects\HPT_BUNDLE\HPT_BUNDLE.xml" -Raw) `
                 | ForEach-Object {$_ -Replace "<szProjectName>HBUNDLE.*<","<szProjectName>HPT_BUNDLE<"} `
+                | ForEach-Object {$_ -Replace "<szRunDtTm>.*<","<szRunDtTm>$(Get-Date -UFormat "%Y-%m-%d-%T:000000" | ForEach-Object { $_ -replace ":", "." })<"} `
                 | Set-Content -Path "${env:TEMP}\highpoint\HPT_BUNDLE\projects\HPT_BUNDLE\HPT_BUNDLE.xml"
 
             Get-ChildItem -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\scripts\HBUNDLE*" -File "*.dat" | ForEach-Object {
@@ -74,15 +77,31 @@ ${manifest}.content | Sort-Object -Property id | ForEach-Object {
                 -Path (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) `
                 -DestinationPath "${Env:TEMP}\highpoint\HPT_BUNDLE\projects" `
                 -Force
+
+            (Get-Content -Path "${env:TEMP}\highpoint\HPT_BUNDLE\projects\$(${_}.name)\$(${_}.name).xml" -Raw) `
+                | ForEach-Object {$_ -Replace "<szRunDtTm>.*<","<szRunDtTm>$(Get-Date -UFormat "%Y-%m-%d-%T:000000" | ForEach-Object { $_ -replace ":", "." })<"} `
+                | Set-Content -Path "${env:TEMP}\highpoint\HPT_BUNDLE\projects\$(${_}.name)\$(${_}.name).xml"
         }
     } ElseIf (${_}.name -in ('HPT_ENROLLMENT')) {
         If (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) {
             Expand-Archive `
                 -Path (Resolve-path -Path ${_}.path -ErrorAction SilentlyContinue) `
-                -DestinationPath "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl" `
+                -DestinationPath "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base\" `
                 -Force
-            Get-Item -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\*" | `
-                Move-Item -Destination "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base" -Force
+
+            Set-Content `
+                -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base\storehp.dms" `
+                -Value "-- $(Get-Date -Format o)`n`nSET LOG storehp.log;`nDELETE FROM ps_sqlstmt_tbl WHERE pgm_name LIKE 'HPP%';`n" `
+                -Force
+
+            Get-ChildItem `
+                -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base\hpp*.dms" `
+                | ForEach-Object {
+                    Add-Content `
+                        -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base\storehp.dms" `
+                        -Value "RUN $(${_}.Name);" `
+                        -Force
+                }
         }
     }
 }
