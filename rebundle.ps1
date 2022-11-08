@@ -2,7 +2,7 @@ ${manifest_path} = Resolve-Path -Path '.\manifest.json'
 ${manifest} = Get-Content ${manifest_path} | ConvertFrom-Json
 
 If (Resolve-path -Path ${manifest}.path -ErrorAction SilentlyContinue) {
-    ${destination} = Join-Path -Path $(Resolve-path -Path ${manifest}.path -ErrorAction SilentlyContinue) -ChildPath ${manifest}.filename
+    ${destination} = Join-Path -Path ${manifest}.path -ChildPath ${manifest}.filename
 } Else {
     Throw "Please ensure that a valid manifest.json is present"
 }
