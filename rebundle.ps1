@@ -89,6 +89,16 @@ ${manifest}.content | Sort-Object -Property id | ForEach-Object {
                 -DestinationPath "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base\" `
                 -Force
 
+            ${CobolLocation} = Get-ChildItem `
+                -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base\*HP*.cbl" `
+                -Recurse `
+                | Select-Object -First 1
+
+            If (${CobolLocation}.Directory.parent.FullName -eq "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base") {
+                Get-ChildItem -Path ${CobolLocation}.Directory | Move-Item -Destination "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base"
+                Remove-Item ${CobolLocation}.Directory.FullName -Recurse -Force
+            }
+
             Set-Content `
                 -Path "${Env:TEMP}\highpoint\HPT_BUNDLE\src\cbl\base\storehp.dms" `
                 -Value "-- $(Get-Date -Format o)`n`nSET LOG storehp.log;`nDELETE FROM ps_sqlstmt_tbl WHERE pgm_name LIKE 'HPP%';`n" `
@@ -108,5 +118,5 @@ ${manifest}.content | Sort-Object -Property id | ForEach-Object {
 
 Compress-Archive `
     -Path "${Env:TEMP}\highpoint\HPT_BUNDLE",${manifest_path} `
-    -DestinationPath ${destination} `
+    -DestinationPath "${destination}" `
     -Update
